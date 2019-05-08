@@ -45,7 +45,7 @@ int y4 = 0;
 int blockType = -1; // current block type
 
 unsigned long startTime = millis(); // current time to count when to lower the block
-int increment = 500; // frequency of falling block, in ms
+int increment = 300; // frequency of falling block, in ms
 
 void setup() {
   Serial.begin(9600);
@@ -59,8 +59,7 @@ void setup() {
   matrix.begin();
 
   randomSeed(analogRead(0));
-  //newBlock(random(0, 6));
-  newBlock(0);
+  newBlock(random(0, 6));
   delay(500);
 }
 
@@ -74,8 +73,8 @@ void loop() {
     fall();
   }
 
-  delay(800);
-  left();
+  delay(200);
+  right();
 }
 
 void newBlock(int r) {
@@ -98,10 +97,10 @@ void newBlock(int r) {
       // the square boi
       x1 = 8;
       y1 = 0;
-      x2 = 8;
-      y2 = 1;
-      x3 = 9;
-      y3 = 0;
+      x2 = 9;
+      y2 = 0;
+      x3 = 8;
+      y3 = 1;
       x4 = 9;
       y4 = 1;
       break;
@@ -140,14 +139,14 @@ void newBlock(int r) {
       break;
     case 5:
       // z
-      x1 = 9;
-      y1 = 1;
+      x1 = 7;
+      y1 = 0;
       x2 = 8;
-      y2 = 1;
+      y2 = 0;
       x3 = 8;
-      y3 = 0;
-      x4 = 7;
-      y4 = 0;
+      y3 = 1;
+      x4 = 9;
+      y4 = 1;
       break;
   }
   matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
@@ -160,7 +159,7 @@ void fall() {
 
   // check if it touches the bottom of the board, or is on top of already fallen blocks
   if (y1 == 31 || y2 == 31 || y3 == 31 || y4 == 31 || board[x1][y1 + 1] == 1 || board[x2][y2 + 1] == 1 || board[x3][y3 + 1] == 1 || board[x4][y4 + 1] == 1) {
-    Serial.println("stop");
+    //Serial.println("stop");
     board[x1][y1] = 1;
     board[x2][y2] = 1;
     board[x3][y3] = 1;
@@ -193,59 +192,147 @@ void fall() {
 
 void left() {
 
+  boolean left = 1; // to move left or not
+
+  // now check for boundaries
   switch (blockType) {
     case 0:
-      if (!((x1 < x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 = x1 && (x4 == 0 || board[x1 - 1][y1] == 1 || board[x1 - 1][y2] == 1 || board[x1 - 1][y3] == 1 || board[x1 - 1][y4] == 1)))) {
-        Serial.println("left");
-        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
-        matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
-        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
-        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
-
-        x1--;
-        x2--;
-        x3--;
-        x4--;
-
-        matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
-        matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 7));
-        matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
-        matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
-        delay(500);
+      if ((x1 < x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 == x1 && (x4 == 0 || board[x1 - 1][y1] == 1 || board[x1 - 1][y2] == 1 || board[x1 - 1][y3] == 1 || board[x1 - 1][y4] == 1))) {
+        left = 0;
       }
       break;
     case 1: // square
-      if (!((x1 < x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 = x1 && (x4 == 0 || board[x4 - 1][y1] == 1 || board[x4 - 1][y2] == 1 || board[x4 - 1][y3] == 1 || board[x4 - 1][y4] == 1)))) {
-        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
-        matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
-        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
-        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
-
-        x1--;
-        x2--;
-        x3--;
-        x4--;
-
-        matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
-        matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 7));
-        matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
-        matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
-        break;
-      case 2: // flipped L
-
-        break;
-      case 3: // L
-        break;
-      case 4: // s
-        break;
-      case 5: // z
-        break;
+      if (x1 == 0 || board[x1 - 1][y1] == 1 || board[x3 - 1][y3] == 1) {
+        left = 0;
       }
+      break;
+    case 2: // flipped L
+      if (y1 < y2 ) {
+        if (x1 == 0 || board[x1 - 1][y1] == 1 || board[x2 - 1][y2] == 1) {
+          left = 0;
+        }
+      } else if (y1 > y2) {
+        if (x4 == 0 || board[x1 - 1][y1] == 1 || board[x4 - 1][y4] == 1) {
+          left = 0;
+        }
+      } else {
+        if (x2 == 0 || board[x2 - 1][y2] == 1 || board[x3 - 1][y3] == 1 || board[x4 - 1][y4] == 1) {
+          left = 0;
+        } else if (x1 == 0 || board[x1 - 1][y1] == 1 || board[x3 - 1][y3] == 1 || board[x4 - 1][y4] == 1) {
+          left = 0;
+        }
+      }
+      break;
+    case 3: // L
+      if (y1 < y2 ) {
+        if (x4 == 0 || board[x4 - 1][y4] == 1 || board[x1 - 1][y1] == 1) {
+          left = 0;
+        }
+      } else if (y1 > y2) {
+        if (x1 == 0 || board[x1 - 1][y1] == 1 || board[x2 - 1][y2] == 1) {
+          left = 0;
+        }
+      } else {
+        if (x2 == 0 || board[x2 - 1][y2] == 1 || board[x3 - 1][y3] == 1 || board[x4 - 1][y4] == 1) {
+          left = 0;
+        } else if (x1 == 0 || board[x1 - 1][y1] == 1 || board[x3 - 1][y3] == 1 || board[x4 - 1][y4] == 1) {
+          left = 0;
+        }
+      }
+      break;
+    case 4: // s
+      if ((x1 < x2 && (x1 == 0 || board[x1 - 1][y1] == 1 || board[x3 - 1][y3] == 1)) || (x2 == x1 && (x2 == 0 || board[x1 - 1][y1] == 1 || board[x2 - 1][y2] == 1 || board[x4 - 1][y4] == 1))) {
+        left = 0;
+      }
+      break;
+    case 5: // z
+      if ((x1 < x2 && (x1 == 0 || board[x1 - 1][y1] == 1 || board[x3 - 1][y3] == 1)) || (x2 == x1 && (x3 == 0 || board[x3 - 1][y3] == 1 || board[x4 - 1][y4] == 1 || board[x1 - 1][y1] == 1))) {
+        left = 0;
+      }
+      break;
+  }
+
+  if (left) {
+    matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+    matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
+    matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+    matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+
+    x1--;
+    x2--;
+    x3--;
+    x4--;
+
+    matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
   }
 }
 
 void right() {
-  if (!((x1 >= x4 && (x1 == 15 || board[x1 + 1][y1] == 1)) || (x4 > x1 && (x4 == 15 || board[x4 + 1][y1] == 1)))) {
+
+  boolean right = 1; // to move right or not
+
+  // now check for boundaries
+  switch (blockType) {
+    case 0:
+      if ((x1 < x4 && (x1 == 15 || board[x1 + 1][y1] == 1)) || (x4 == x1 && (x4 == 15 || board[x1 + 1][y1] == 1 || board[x1 + 1][y2] == 1 || board[x1 + 1][y3] == 1 || board[x1 + 1][y4] == 1))) {
+        right = 0;
+      }
+      break;
+    case 1: // square
+      if (x2 == 15 || board[x2 + 1][y2] == 1 || board[x4 + 1][y4] == 1) {
+        right = 0;
+      }
+      break;
+    case 2: // flipped L
+      if (y1 < y2 ) {
+        if (x4 == 15 || board[x1 + 1][y1] == 1 || board[x4 + 1][y4] == 1) {
+          right = 0;
+        }
+      } else if (y1 > y2) {
+        if (x1 == 15 || board[x1 + 1][y1] == 1 || board[x2 + 1][y2] == 1) {
+          right = 0;
+        }
+      } else {
+        if (x2 == 15 || board[x2 + 1][y2] == 1 || board[x3 + 1][y3] == 1 || board[x4 + 1][y4] == 1) {
+          right = 0;
+        } else if (x1 == 15 || board[x1 + 1][y1] == 1 || board[x3 + 1][y3] == 1 || board[x4 + 1][y4] == 1) {
+          right = 0;
+        }
+      }
+      break;
+    case 3: // L
+      if (y1 < y2 ) {
+        if (x1 == 15 || board[x1 + 1][y1] == 1 || board[x2 + 1][y2] == 1) {
+          right = 0;
+        }
+      } else if (y1 > y2) {
+        if (x4 == 15 || board[x1 + 1][y1] == 1 || board[x4 + 1][y4] == 1) {
+          right = 0;
+        }
+      } else {
+        if (x2 == 15 || board[x2 + 1][y2] == 1 || board[x3 + 1][y3] == 1 || board[x4 + 1][y4] == 1) {
+          right = 0;
+        } else if (x1 == 15 || board[x1 + 1][y1] == 1 || board[x3 + 1][y3] == 1 || board[x4 + 1][y4] == 1) {
+          right = 0;
+        }
+      }
+      break;
+    case 4: // s
+      if ((x1 < x2 && (x4 == 15 || board[x4 + 1][y4] == 1 || board[x2 + 1][y2] == 1)) || (x2 == x1 && (x3 == 15 || board[x3 + 1][y3] == 1 || board[x1 + 1][y1] == 1 || board[x4 + 1][y4] == 1))) {
+        right = 0;
+      }
+      break;
+    case 5: // z
+      if ((x1 < x2 && (x4 == 15 || board[x4 + 1][y4] == 1 || board[x2 + 1][y2] == 1)) || (x2 == x1 && (x1 == 15 || board[x1 + 1][y1] == 1 || board[x4 + 1][y4] == 1 || board[x2 + 1][y2] == 1))) {
+        right = 0;
+      }
+      break;
+  }
+
+  if (right) {
     matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
     matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
     matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
@@ -256,10 +343,10 @@ void right() {
     x3++;
     x4++;
 
-    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
+    matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
   }
 }
 

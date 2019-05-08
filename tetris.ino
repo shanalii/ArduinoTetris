@@ -59,7 +59,8 @@ void setup() {
   matrix.begin();
 
   randomSeed(analogRead(0));
-  newBlock(random(0, 6));
+  //newBlock(random(0, 6));
+  newBlock(5);
   delay(500);
 }
 
@@ -72,8 +73,8 @@ void loop() {
     startTime = curTime;
     fall();
   }
-
-  delay(200);
+  rotate();
+  delay(400);
   right();
 }
 
@@ -168,8 +169,8 @@ void fall() {
     matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 7));
     matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 7));
     matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 7));
-    newBlock(random(0, 6));
-    //} else if () {
+    //newBlock(random(0, 6));
+    newBlock(5);
 
   } else {
     // fall normally
@@ -353,30 +354,171 @@ void right() {
 
 void rotate() {
 
-  matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
-  matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
-  matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
-
-  if (x1 > x2 && y2 != 31 && board[x2][y2 + 1] != 1) {
-    x1 = x2;
-    y1 = y2 - 1;
-    x3 = x2;
-    y3 = y2 + 1;
-    x4 = x2;
-    y4 = y2 + 2;
-    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
-  } else if (y2 != 15 && y2 > 1) {
-    x1 = x2 + 1;
-    y1 = y2;
-    x3 = x2 - 1;
-    y3 = y2;
-    x4 = x2 - 2;
-    y4 = y2;
-    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
+  // check for boundaries
+  switch (blockType) {
+    case 0:
+      if (x1 == x4 && !(x2 == 15 || x2 <= 1 || board[x2 + 1][y2] == 1 || board[x2 - 1][y2] == 1 || board[x2 - 2][y2] == 1)) {
+        Serial.println("1");
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x2 + 1;
+        y1 = y2;
+        x3 = x2 - 1;
+        y3 = y2;
+        x4 = x2 - 2;
+        y4 = y2;
+      } else if (x4 < x1 && !(y2 >= 30 || board[x2 - 1][y2] == 1 || board[x2 + 1][y2] == 1 || board[x2 + 2][y2] == 1)) {
+        Serial.println("2");
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x2;
+        y1 = y2 - 1;
+        x3 = x2;
+        y3 = y2 + 1;
+        x4 = x2;
+        y4 = y2 + 2;
+      }
+      break;
+    case 1: // square
+      break;
+    case 2: // flipped L
+      if (y1 < y2 && !(y2 >= 30 || board[x2][y2 + 1] == 1 || board[x2][y2 + 2] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x3;
+        y1 = y3;
+        x3 = x2;
+        y3 = y2 + 1;
+        x4 = x2;
+        y4 = y2 + 2;
+      } else if (y1 > y2 && !(y2 <= 1 || board[x2][y2 - 1] == 1 || board[x2][y2 - 2] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x3;
+        y1 = y3;
+        x3 = x2;
+        y3 = y2 - 1;
+        x4 = x2;
+        y4 = y2 - 2;
+      } else if (x1 > x2 && !(x2 <= 1 || board[x2 - 1][y2] == 1 || board[x2 - 2][y2] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x3;
+        y1 = y3;
+        x3 = x2 - 1;
+        y3 = y2;
+        x4 = x2 - 2;
+        y4 = y2;
+      } else if (x2 > x1 && !(x2 >= 14 || board[x2 + 1][y2] == 1 || board[x2 + 2][y2] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x3;
+        y1 = y3;
+        x3 = x2 + 1;
+        y3 = y2;
+        x4 = x2 + 2;
+        y4 = y2;
+      }
+      break;
+    case 3: // L
+      if (y1 < y2 && !(x2 == 15 || y1 == 0 || board[x1][y1 - 1] == 1 || board[x2 + 1][y2] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x3 = x1;
+        y3 = y1;
+        x1 = x2 + 1;
+        y1 = y2;
+        x4 = x2;
+        y4 = y2 - 2;
+      } else if (y1 > y2 && !(x2 == 0 || y1 == 31 || board[x2 - 1][y2] == 1 || board[x1][y1 + 1] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x3 = x1;
+        y3 = y1;
+        x1 = x2 - 1;
+        y1 = y2;
+        x4 = x2;
+        y4 = y2 + 2;
+      } else if (x1 > x2 && !(y2 == 31 || x1 == 15 || board[x2][y2 + 1] == 1 || board[x1 + 1][y1] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x3 = x1;
+        y3 = y1;
+        x1 = x2;
+        y1 = y2 + 1;
+        x4 = x2 + 2;
+        y4 = y2;
+      } else if (x2 > x1 && !(x1 == 0 || y2 == 0 || board[x2][y2 - 1] == 1 || board[x1 - 1][y1] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x3 = x1;
+        y3 = y1;
+        x1 = x2;
+        y1 = y2 - 1;
+        x4 = x2 - 2;
+        y4 = y2;
+      }
+      break;
+    case 4: // s
+      if (x1 < x2 && !(y2 == 15 || board[x2 + 1][y2] == 1 || board[x4][y4 + 2] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x3;
+        y1 = y3;
+        x3 = x2 + 1;
+        y3 = y2;
+        x4 = x3;
+        y4 = y3 + 1;
+      } else if (x2 == x1 && !(y2 == 0 || board[x2 - 1][y4] == 1 || board[x2][y2 + 1] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x2 - 1;
+        y1 = y2;
+        x3 = x2;
+        y3 = y2 - 1;
+        x4 = x3 + 1;
+        y4 = y3;
+      }
+      break;
+    case 5: // z
+      if (x1 < x2 && !(y2 == 0 || board[x2][y2 - 1] == 1 || board[x1][y1 + 1] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x3 = x1;
+        y3 = y1;
+        x1 = x2;
+        y1 = y2 - 1;
+        x4 = x3;
+        y4 = y3 + 1;
+      } else if (x2 == x1 && !(x2 == 15 || board[x2 + 1][y2] == 1 || board[x1 - 1][y1] == 1)) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+        x1 = x2 - 1;
+        y1 = y2;
+        x3 = x2;
+        y3 = y2 + 1;
+        x4 = x3 + 1;
+        y4 = y3;
+      }
+      break;
   }
+
+  matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
+  matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
+  matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
 
 }

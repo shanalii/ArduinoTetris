@@ -59,7 +59,8 @@ void setup() {
   matrix.begin();
 
   randomSeed(analogRead(0));
-  newBlock(random(0, 6));
+  //newBlock(random(0, 6));
+  newBlock(0);
   delay(500);
 }
 
@@ -73,8 +74,8 @@ void loop() {
     fall();
   }
 
-  //delay(800);
-  //rotate();
+  delay(800);
+  left();
 }
 
 void newBlock(int r) {
@@ -159,6 +160,7 @@ void fall() {
 
   // check if it touches the bottom of the board, or is on top of already fallen blocks
   if (y1 == 31 || y2 == 31 || y3 == 31 || y4 == 31 || board[x1][y1 + 1] == 1 || board[x2][y2 + 1] == 1 || board[x3][y3 + 1] == 1 || board[x4][y4 + 1] == 1) {
+    Serial.println("stop");
     board[x1][y1] = 1;
     board[x2][y2] = 1;
     board[x3][y3] = 1;
@@ -193,7 +195,27 @@ void left() {
 
   switch (blockType) {
     case 0:
-      if (!((x1 <= x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 < x1 && (x4 == 0 || board[x4 - 1][y1] == 1)))) {
+      if (!((x1 < x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 = x1 && (x4 == 0 || board[x1 - 1][y1] == 1 || board[x1 - 1][y2] == 1 || board[x1 - 1][y3] == 1 || board[x1 - 1][y4] == 1)))) {
+        Serial.println("left");
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+
+        x1--;
+        x2--;
+        x3--;
+        x4--;
+
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
+        matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 7));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
+        delay(500);
+      }
+      break;
+    case 1: // square
+      if (!((x1 < x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 = x1 && (x4 == 0 || board[x4 - 1][y1] == 1 || board[x4 - 1][y2] == 1 || board[x4 - 1][y3] == 1 || board[x4 - 1][y4] == 1)))) {
         matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
         matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
         matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
@@ -209,16 +231,15 @@ void left() {
         matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
         matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
         break;
-    case 1:
-      break;
-    case 2: 
-      break;
-    case 3:
-      break;
-    case 4: 
-      break;
-    case 5:
-      break;
+      case 2: // flipped L
+
+        break;
+      case 3: // L
+        break;
+      case 4: // s
+        break;
+      case 5: // z
+        break;
       }
   }
 }

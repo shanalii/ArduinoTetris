@@ -53,16 +53,13 @@ void setup() {
   for (int x = 0; x < 16; x++) {
     for (int y = 0; y < 32; y++) {
       board[x][y] = 0;
-
     }
   }
 
   matrix.begin();
 
-  //randomSeed(analogRead(0));
-  newBlock();
-  //newBlock(random(0, 6));
-  //fall();
+  randomSeed(analogRead(0));
+  newBlock(random(0, 6));
   delay(500);
 }
 
@@ -76,127 +73,103 @@ void loop() {
     fall();
   }
 
-  delay(800);
-  rotate();
+  //delay(800);
+  //rotate();
 }
 
-void newBlock() {
-  Serial.println("newblock");
-
+void newBlock(int r) {
   // set current block type
-  //blockType = r;
+  blockType = r;
   //Serial.println(r);
-  x1 = 8;
-  y1 = 0;
-  x2 = 8;
-  y2 = 1;
-  x3 = 8;
-  y3 = 2;
-  x4 = 8;
-  y4 = 3;
-  matrix.drawPixel(0, 8, matrix.Color333(0, 7, 7));
-  matrix.drawPixel(1, 8, matrix.Color333(0, 7, 7));
-  matrix.drawPixel(2, 8, matrix.Color333(0, 7, 7));
-  matrix.drawPixel(3, 8, matrix.Color333(0, 7, 7));
-
-  /*switch (r) {
+  switch (r) {
     case 0:
       // the long boi
-      board[8][0] = 1;
-      matrix.drawPixel(0, 8, matrix.Color333(0, 7, 7));
-      board[8][1] = 1;
-      matrix.drawPixel(1, 8, matrix.Color333(0, 7, 7));
-      board[8][2] = 1;
-      matrix.drawPixel(2, 8, matrix.Color333(0, 7, 7));
-      board[8][3] = 1;
-      matrix.drawPixel(3, 8, matrix.Color333(0, 7, 7));
+      x1 = 8;
+      y1 = 0;
+      x2 = 8;
+      y2 = 1;
+      x3 = 8;
+      y3 = 2;
+      x4 = 8;
+      y4 = 3;
       break;
     case 1:
       // the square boi
-      board[8][0] = 1;
-      matrix.drawPixel(0, 8, matrix.Color333(7, 7, 0));
-      board[8][1] = 1;
-      matrix.drawPixel(1, 8, matrix.Color333(7, 7, 0));
-      board[7][0] = 1;
-      matrix.drawPixel(0, 7, matrix.Color333(7, 7, 0));
-      board[7][1] = 1;
-      matrix.drawPixel(1, 7, matrix.Color333(7, 7, 0));
+      x1 = 8;
+      y1 = 0;
+      x2 = 8;
+      y2 = 1;
+      x3 = 9;
+      y3 = 0;
+      x4 = 9;
+      y4 = 1;
       break;
     case 2:
       // flipped L
-      board[8][1] = 1;
-      matrix.drawPixel(1, 8, matrix.Color333(0, 1, 7));
-      board[7][0] = 1;
-      matrix.drawPixel(0, 7, matrix.Color333(0, 1, 7));
-      board[7][1] = 1;
-      matrix.drawPixel(1, 7, matrix.Color333(0, 1, 7));
-      board[9][1] = 1;
-      matrix.drawPixel(1, 9, matrix.Color333(0, 1, 7));
+      x1 = 7;
+      y1 = 0;
+      x2 = 7;
+      y2 = 1;
+      x3 = 8;
+      y3 = 1;
+      x4 = 9;
+      y4 = 1;
       break;
     case 3:
       // L
-      board[8][1] = 1;
-      matrix.drawPixel(1, 8, matrix.Color333(7, 4, 0));
-      board[7][1] = 1;
-      matrix.drawPixel(1, 7, matrix.Color333(7, 4, 0));
-      board[9][1] = 1;
-      matrix.drawPixel(1, 9, matrix.Color333(7, 4, 0));
-      board[9][0] = 1;
-      matrix.drawPixel(0, 9, matrix.Color333(7, 4, 0));
+      x1 = 9;
+      y1 = 0;
+      x2 = 9;
+      y2 = 1;
+      x3 = 8;
+      y3 = 1;
+      x4 = 7;
+      y4 = 1;
       break;
     case 4:
       // s
-      board[8][1] = 1;
-      matrix.drawPixel(1, 8, matrix.Color333(0, 7, 0));
-      board[7][1] = 1;
-      matrix.drawPixel(1, 7, matrix.Color333(0, 7, 0));
-      board[8][0] = 1;
-      matrix.drawPixel(0, 8, matrix.Color333(0, 7, 0));
-      board[9][0] = 1;
-      matrix.drawPixel(0, 9, matrix.Color333(0, 7, 0));
+      x1 = 7;
+      y1 = 1;
+      x2 = 8;
+      y2 = 1;
+      x3 = 8;
+      y3 = 0;
+      x4 = 9;
+      y4 = 0;
       break;
     case 5:
       // z
-      board[8][1] = 1;
-      matrix.drawPixel(1, 8, matrix.Color333(7, 0, 0));
-      board[9][1] = 1;
-      matrix.drawPixel(1, 9, matrix.Color333(7, 0, 0));
-      board[8][0] = 1;
-      matrix.drawPixel(0, 8, matrix.Color333(7, 0, 0));
-      board[7][0] = 1;
-      matrix.drawPixel(0, 7, matrix.Color333(7, 0, 0));
+      x1 = 9;
+      y1 = 1;
+      x2 = 8;
+      y2 = 1;
+      x3 = 8;
+      y3 = 0;
+      x4 = 7;
+      y4 = 0;
       break;
-    case 6:
-      // T but upside down
-      board[8][1] = 1;
-      matrix.drawPixel(1, 8, matrix.Color333(4, 0, 7));
-      board[8][0] = 1;
-      matrix.drawPixel(0, 8, matrix.Color333(4, 0, 7));
-      board[7][1] = 1;
-      matrix.drawPixel(1, 7, matrix.Color333(4, 0, 7));
-      board[9][1] = 1;
-      matrix.drawPixel(1, 9, matrix.Color333(4, 0, 7));
-      break;
-    default:
-      // statements
-      break;*/
-  //}
+  }
+  matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
+  matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
+  matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
+  matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
 }
 
 void fall() {
 
   // check if it touches the bottom of the board, or is on top of already fallen blocks
-  if (y1 == 31 || y4 == 31 || board[x1][y1 + 1] == 1 || board[x4][y4 + 1] == 1) {
+  if (y1 == 31 || y2 == 31 || y3 == 31 || y4 == 31 || board[x1][y1 + 1] == 1 || board[x2][y2 + 1] == 1 || board[x3][y3 + 1] == 1 || board[x4][y4 + 1] == 1) {
     board[x1][y1] = 1;
     board[x2][y2] = 1;
     board[x3][y3] = 1;
     board[x4][y4] = 1;
-    Serial.println(board[x1][y1]);
     matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 7));
     matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 7));
     matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 7));
     matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 7));
-    newBlock();
+    newBlock(random(0, 6));
+    //} else if () {
+
   } else {
     // fall normally
     matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
@@ -209,29 +182,44 @@ void fall() {
     y3++;
     y4++;
 
-    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
+    matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
   }
 }
 
 void left() {
-  if (!((x1 <= x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 < x1 && (x4 == 0 || board[x4 - 1][y1] == 1)))) {
-    matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
-    matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
-    matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
-    matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
-    
-    x1--;
-    x2--;
-    x3--;
-    x4--;
 
-    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
-    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
+  switch (blockType) {
+    case 0:
+      if (!((x1 <= x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 < x1 && (x4 == 0 || board[x4 - 1][y1] == 1)))) {
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
+
+        x1--;
+        x2--;
+        x3--;
+        x4--;
+
+        matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
+        matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 7));
+        matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));
+        matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 7));
+        break;
+    case 1:
+      break;
+    case 2: 
+      break;
+    case 3:
+      break;
+    case 4: 
+      break;
+    case 5:
+      break;
+      }
   }
 }
 
@@ -241,7 +229,7 @@ void right() {
     matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 0));
     matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
     matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
-    
+
     x1++;
     x2++;
     x3++;
@@ -266,7 +254,7 @@ void rotate() {
     y1 = y2 - 1;
     x3 = x2;
     y3 = y2 + 1;
-    x4 = x2; 
+    x4 = x2;
     y4 = y2 + 2;
     matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 7));
     matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 7));

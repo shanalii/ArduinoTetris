@@ -27,6 +27,11 @@
 #define B   A1
 #define C   A2
 
+// buttons
+#define LEFT 13
+#define RIGHT 11
+#define ROTATE 12
+
 RGBmatrixPanel matrix(A, B, C, CLK, LAT, OE, false);
 
 // global variables
@@ -42,12 +47,21 @@ int y3 = 0;
 int x4 = 0;
 int y4 = 0;
 
+// random seed
+int seed = 0;
+
 int blockType = -1; // current block type
 
 unsigned long startTime = millis(); // current time to count when to lower the block
-int increment = 300; // frequency of falling block, in ms
+int increment = 200; // frequency of falling block, in ms
 
 void setup() {
+
+  // set up buttons
+  pinMode(RIGHT, INPUT);
+  pinMode(LEFT, INPUT);
+  pinMode(ROTATE, INPUT);
+
   Serial.begin(9600);
   // initialize board to be all 0
   for (int x = 0; x < 16; x++) {
@@ -58,13 +72,15 @@ void setup() {
 
   matrix.begin();
 
-  randomSeed(analogRead(0));
+  randomSeed(seed);
   //newBlock(random(0, 6));
-  newBlock(5);
+  newBlock(1);
   delay(500);
 }
 
 void loop() {
+
+  seed++;
 
   // make the block fall every increment
   unsigned long curTime = millis();
@@ -73,9 +89,21 @@ void loop() {
     startTime = curTime;
     fall();
   }
-  rotate();
-  delay(400);
-  right();
+
+  if (digitalRead(LEFT) == HIGH) {
+    left();
+    delay(200);
+  }
+
+  else if (digitalRead(RIGHT) == HIGH) {
+    right();
+    delay(200);
+  }
+
+  else if (digitalRead(ROTATE) == HIGH) {
+    rotate();
+    delay(200);
+  }
 }
 
 void newBlock(int r) {
@@ -169,8 +197,102 @@ void fall() {
     matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 7));
     matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 7));
     matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 7));
-    //newBlock(random(0, 6));
-    newBlock(5);
+
+
+    // check for full rows
+
+    // array of full row numbers
+    short fullRows[4];
+    for (short i = 0; i < 4; i++) {
+      fullRows[i] = -1;
+    }
+
+    // y1
+    boolean full = 1;
+    for (short x = 0; x < 16; x++) {
+      if (board[x][y1] == 0) {
+        full = 0;
+        break;
+      }
+    }
+    if (full) {
+      insert(fullRows, y1);
+      Serial.println("y1");
+    }
+
+    // y2
+    full = 1;
+    for (short x = 0; x < 16; x++) {
+      if (board[x][y2] == 0) {
+        full = 0;
+        break;
+      }
+    }
+    if (full) {
+      insert(fullRows, y2);
+      Serial.println("y2");
+    }
+
+    // y3
+    full = 1;
+    for (short x = 0; x < 16; x++) {
+      if (board[x][y3] == 0) {
+        full = 0;
+        break;
+      }
+    }
+    if (full) {
+      insert(fullRows, y3);
+      Serial.println("y3");
+    }
+
+    // y4
+    full = 1;
+    for (short x = 0; x < 16; x++) {
+      if (board[x][y4] == 0) {
+        full = 0;
+        break;
+      }
+    }
+    if (full) {
+      insert(fullRows, y4);
+      Serial.println("y4");
+    }
+
+    // number of rows to shift the row down
+    short shift = 1;
+
+    // last row to shift from
+    short lastrow = fullRows[0];
+
+    for (short i = 0; i < 3; i++) {
+      if (i == -1) {
+        break;
+      }
+      if (fullRows[i + 1] == -1) {
+        lastrow = fullRows[i];
+        break;
+      }
+      if (fullRows[i] != fullRows[i + 1]) {
+        for (short r = fullRows[i] - 1; r > fullRows[i + 1]; i--) {
+          for (short x = 0; x < 32; x++) {
+            board[x][r] = board[x][r - shift];
+            matrix.drawPixel(r, x, matrix.Color333(0, 0, 7));
+          }
+        }
+      }
+      shift++;
+    }
+
+    // shift last row and above
+    for (short r = lastrow - 1; r > 0; r--) {
+      for (short x = 0; x < 32; x++) {
+        board[x][r] = board[x][r - shift];
+        matrix.drawPixel(r, x, matrix.Color333(0, 0, 7));
+      }
+    }
+
+    newBlock(1);
 
   } else {
     // fall normally
@@ -188,6 +310,33 @@ void fall() {
     matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
     matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
     matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
+  }
+}
+
+
+// insertion sort
+void insert(short arr[], short n) {
+  short insert = 0;
+  for (short i = 0; i < 4; i++) {
+
+    if (arr[i] == -1 || arr[i] == n) {
+      insert = i;
+      break;
+    }
+
+    if (arr[i] < n) {
+      for (short j = 3; j > i; j--) {
+        arr[j] = arr[j - 1];
+      }
+      insert = i;
+      break;
+    }
+  }
+
+  arr[insert] = n;
+
+  for (short k = 0; k < 4; k++) {
+    Serial.println(arr[k]);
   }
 }
 
@@ -278,7 +427,7 @@ void right() {
   // now check for boundaries
   switch (blockType) {
     case 0:
-      if ((x1 < x4 && (x1 == 15 || board[x1 + 1][y1] == 1)) || (x4 == x1 && (x4 == 15 || board[x1 + 1][y1] == 1 || board[x1 + 1][y2] == 1 || board[x1 + 1][y3] == 1 || board[x1 + 1][y4] == 1))) {
+      if ((x1 > x4 && (x1 == 15 || board[x1 + 1][y1] == 1)) || (x4 == x1 && (x4 == 15 || board[x1 + 1][y1] == 1 || board[x1 + 1][y2] == 1 || board[x1 + 1][y3] == 1 || board[x1 + 1][y4] == 1))) {
         right = 0;
       }
       break;
@@ -358,7 +507,6 @@ void rotate() {
   switch (blockType) {
     case 0:
       if (x1 == x4 && !(x2 == 15 || x2 <= 1 || board[x2 + 1][y2] == 1 || board[x2 - 1][y2] == 1 || board[x2 - 2][y2] == 1)) {
-        Serial.println("1");
         matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
         matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
         matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));
@@ -369,7 +517,6 @@ void rotate() {
         x4 = x2 - 2;
         y4 = y2;
       } else if (x4 < x1 && !(y2 >= 30 || board[x2 - 1][y2] == 1 || board[x2 + 1][y2] == 1 || board[x2 + 2][y2] == 1)) {
-        Serial.println("2");
         matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 0));
         matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 0));
         matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 0));

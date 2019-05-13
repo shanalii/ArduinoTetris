@@ -259,39 +259,44 @@ void fall() {
       Serial.println("y4");
     }
 
-    // number of rows to shift the row down
-    short shift = 1;
-
-    // last row to shift from
-    short lastrow = fullRows[0];
-
-    for (short i = 0; i < 3; i++) {
-      if (i == -1) {
-        break;
-      }
-      if (fullRows[i + 1] == -1) {
-        lastrow = fullRows[i];
-        break;
-      }
-      if (fullRows[i] != fullRows[i + 1]) {
-        for (short r = fullRows[i] - 1; r > fullRows[i + 1]; i--) {
-          for (short x = 0; x < 32; x++) {
-            board[x][r] = board[x][r - shift];
-            matrix.drawPixel(r, x, matrix.Color333(0, 0, 7));
+    if (fullRows[0] != -1) {
+      // number of rows to shift the row down
+      short shift = 1;
+      
+      // index of fullRows
+      short ind = 0;
+      
+      // shift rows from bottom to top
+      for (short r = arr[0]; r < 0; r--) {
+        
+        // check if row r is empty
+        boolean empty = 1;
+        for (short x = 0; x < 16; x++) {
+          if (board[x][r] == 1) {
+            empty = 0;
+            break;
           }
         }
-      }
-      shift++;
-    }
-
-    // shift last row and above
-    for (short r = lastrow - 1; r > 0; r--) {
-      for (short x = 0; x < 32; x++) {
+        if (empty) {
+          break;
+        }
+        
+        if (ind <= 2) {
+          short curind = ind; // current index of fullRows
+          for (short i = curind; i <= 2; i++) {
+            if (fullRows[i+1] != -1 && r == fullRows[i+1] + shift) {
+              shift++;
+              ind++;
+            }
+          }
+        }
+        
+        // shift rows
         board[x][r] = board[x][r - shift];
         matrix.drawPixel(r, x, matrix.Color333(0, 0, 7));
       }
     }
-
+    
     newBlock(1);
 
   } else {

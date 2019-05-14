@@ -23,6 +23,8 @@ RGBmatrixPanel matrix(A, B, C, CLK, LAT, OE, false);
 
 // global variables
 boolean board[16][32];
+int score = 0;
+boolean gameover = 0;
 
 // coordinates of current shape
 int x1 = 0;
@@ -57,39 +59,41 @@ void setup() {
     }
   }
 
+  Serial.println("Your Score:");
+
   matrix.begin();
 
-  randomSeed(seed);
-  //newBlock(random(0, 6));
-  newBlock(1);
+  randomSeed(analogRead(3));
+  newBlock(random(0, 6));
   delay(500);
 }
 
 void loop() {
 
-  seed++;
-
-  // make the block fall every increment
-  unsigned long curTime = millis();
-  if (curTime > (startTime + increment)) {
-    //Serial.println(curTime);
-    startTime = curTime;
-    fall();
-  }
-
-  if (digitalRead(LEFT) == HIGH) {
-    left();
-    delay(200);
-  }
-
-  else if (digitalRead(RIGHT) == HIGH) {
-    right();
-    delay(200);
-  }
-
-  else if (digitalRead(ROTATE) == HIGH) {
-    rotate();
-    delay(200);
+  if (!gameover) {
+    seed++;
+  
+    // make the block fall every increment
+    unsigned long curTime = millis();
+    if (curTime > (startTime + increment)) {
+      startTime = curTime;
+      fall();
+    }
+  
+    if (digitalRead(LEFT) == HIGH) {
+      left();
+      delay(200);
+    }
+  
+    else if (digitalRead(RIGHT) == HIGH) {
+      right();
+      delay(200);
+    }
+  
+    else if (digitalRead(ROTATE) == HIGH) {
+      rotate();
+      delay(200);
+    }
   }
 }
 
@@ -165,10 +169,10 @@ void newBlock(int r) {
       y4 = 1;
       break;
   }
-  matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
-  matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
-  matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
-  matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
+  matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 4));
+  matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 4));
+  matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 4));
+  matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 4));
 }
 
 void fall() {
@@ -180,10 +184,10 @@ void fall() {
     board[x2][y2] = 1;
     board[x3][y3] = 1;
     board[x4][y4] = 1;
-    matrix.drawPixel(y1, x1, matrix.Color333(0, 0, 7));
-    matrix.drawPixel(y2, x2, matrix.Color333(0, 0, 7));
-    matrix.drawPixel(y3, x3, matrix.Color333(0, 0, 7));
-    matrix.drawPixel(y4, x4, matrix.Color333(0, 0, 7));
+    matrix.drawPixel(y1, x1, matrix.Color333(1, 0, 7));
+    matrix.drawPixel(y2, x2, matrix.Color333(1, 0, 7));
+    matrix.drawPixel(y3, x3, matrix.Color333(1, 0, 7));
+    matrix.drawPixel(y4, x4, matrix.Color333(1, 0, 7));
 
 
     // check for full rows
@@ -204,7 +208,6 @@ void fall() {
     }
     if (full) {
       insert(fullRows, y1);
-      Serial.println("y1");
     }
 
     // y2
@@ -217,7 +220,6 @@ void fall() {
     }
     if (full) {
       insert(fullRows, y2);
-      Serial.println("y2");
     }
 
     // y3
@@ -230,7 +232,6 @@ void fall() {
     }
     if (full) {
       insert(fullRows, y3);
-      Serial.println("y3");
     }
 
     // y4
@@ -243,10 +244,12 @@ void fall() {
     }
     if (full) {
       insert(fullRows, y4);
-      Serial.println("y4");
     }
 
     if (fullRows[0] != -1) {
+      // print score
+      Serial.println(score);
+      
       // number of rows to shift the row down
       short shift = 1;
       
@@ -254,7 +257,7 @@ void fall() {
       short ind = 0;
       
       // shift rows from bottom to top
-      for (short r = arr[0]; r < 0; r--) {
+      for (short r = fullRows[0]; r > 0; r--) {
         
         // check if row r is empty
         boolean empty = 1;
@@ -279,12 +282,26 @@ void fall() {
         }
         
         // shift rows
-        board[x][r] = board[x][r - shift];
-        matrix.drawPixel(r, x, matrix.Color333(0, 0, 7));
+        for (short x = 0; x < 16; x++) {
+          board[x][r] = board[x][r - shift];
+          if (board[x][r] == 1) {
+            matrix.drawPixel(r, x, matrix.Color333(1, 0, 7));
+          } else {
+            matrix.drawPixel(r, x, matrix.Color333(0, 0, 0));
+          }
+        }
       }
     }
-    
-    newBlock(1);
+
+    if (y1 == 0 || y2 == 0 || y3 == 0 || y4 == 0) {
+      gameover = 1;
+    }
+
+    if (gameover) {
+      endgame();
+    } else {
+      newBlock(random(0, 6));
+    }
 
   } else {
     // fall normally
@@ -298,10 +315,10 @@ void fall() {
     y3++;
     y4++;
 
-    matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 4));
   }
 }
 
@@ -311,8 +328,13 @@ void insert(short arr[], short n) {
   short insert = 0;
   for (short i = 0; i < 4; i++) {
 
-    if (arr[i] == -1 || arr[i] == n) {
+    if (arr[i] == n) {
+      break;
+    }
+
+    if (arr[i] == -1) {
       insert = i;
+      score++;
       break;
     }
 
@@ -321,15 +343,12 @@ void insert(short arr[], short n) {
         arr[j] = arr[j - 1];
       }
       insert = i;
+      score++;
       break;
     }
   }
 
   arr[insert] = n;
-
-  for (short k = 0; k < 4; k++) {
-    Serial.println(arr[k]);
-  }
 }
 
 void left() {
@@ -339,7 +358,7 @@ void left() {
   // now check for boundaries
   switch (blockType) {
     case 0:
-      if ((x1 < x4 && (x1 == 0 || board[x1 - 1][y1] == 1)) || (x4 == x1 && (x4 == 0 || board[x1 - 1][y1] == 1 || board[x1 - 1][y2] == 1 || board[x1 - 1][y3] == 1 || board[x1 - 1][y4] == 1))) {
+      if ((x1 > x4 && (x4 == 0 || board[x1 - 1][y1] == 1)) || (x4 == x1 && (x4 == 0 || board[x1 - 1][y1] == 1 || board[x1 - 1][y2] == 1 || board[x1 - 1][y3] == 1 || board[x1 - 1][y4] == 1))) {
         left = 0;
       }
       break;
@@ -405,10 +424,10 @@ void left() {
     x3--;
     x4--;
 
-    matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 4));
   }
 }
 
@@ -485,10 +504,10 @@ void right() {
     x3++;
     x4++;
 
-    matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y2, x2, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
-    matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
+    matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y2, x2, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 4));
+    matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 4));
   }
 }
 
@@ -656,8 +675,41 @@ void rotate() {
       break;
   }
 
-  matrix.drawPixel(y1, x1, matrix.Color333(7, 0, 4));
-  matrix.drawPixel(y3, x3, matrix.Color333(7, 0, 4));
-  matrix.drawPixel(y4, x4, matrix.Color333(7, 0, 4));
+  matrix.drawPixel(y1, x1, matrix.Color333(0, 7, 4));
+  matrix.drawPixel(y3, x3, matrix.Color333(0, 7, 4));
+  matrix.drawPixel(y4, x4, matrix.Color333(0, 7, 4));
 
+}
+
+void endgame() {
+
+  Serial.println("Game Over! You Scored:");
+  Serial.println(score);
+  
+  matrix.setCursor(1, 0);   // start at top left, with one pixel of spacing
+  matrix.setTextSize(1);    // size 1 == 8 pixels high
+
+  matrix.fillScreen(matrix.Color333(0, 0, 0));
+  
+  // print each letter with a rainbow color
+  matrix.setTextColor(matrix.Color333(7,0,0));
+  matrix.print('G');
+  matrix.setTextColor(matrix.Color333(7,4,0)); 
+  matrix.print('A');
+  matrix.setTextColor(matrix.Color333(7,7,0));
+  matrix.print('M');
+  matrix.setTextColor(matrix.Color333(4,7,0)); 
+  matrix.print('E');
+ 
+  matrix.setCursor(1, 9);   // next line
+  matrix.setTextColor(matrix.Color333(0,7,7)); 
+  matrix.print('O');
+  matrix.setTextColor(matrix.Color333(0,4,7)); 
+  matrix.print('V');
+  matrix.setTextColor(matrix.Color333(0,0,7));
+  matrix.print('E');
+  matrix.setTextColor(matrix.Color333(4,0,7)); 
+  matrix.print("R");
+  matrix.setTextColor(matrix.Color333(7,0,4)); 
+  matrix.print("!");
 }

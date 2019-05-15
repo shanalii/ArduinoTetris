@@ -36,8 +36,6 @@ int y3 = 0;
 int x4 = 0;
 int y4 = 0;
 
-// random seed
-int seed = 0;
 
 int blockType = -1; // current block type
 
@@ -63,7 +61,7 @@ void setup() {
 
   matrix.begin();
 
-  randomSeed(analogRead(3));
+  randomSeed(analogRead(4));
   newBlock(random(0, 6));
   delay(500);
 }
@@ -71,7 +69,6 @@ void setup() {
 void loop() {
 
   if (!gameover) {
-    seed++;
   
     // make the block fall every increment
     unsigned long curTime = millis();
